@@ -474,3 +474,42 @@ class wavepy:
         s_i = (np.mean( temp_s**2 )/ (np.mean(temp_s)**2) ) - 1 
 
         return s_i
+        
+    def StructFunc(self,ph):
+        
+        # Define mask construction
+        mask = self.MakePupil(self.SideLen/2)        
+        delta = self.SideLen/self.N      
+        
+        
+        N_size = np.shape(ph) #Make sure to reference 0th element later
+        ph = ph*mask
+        P = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(ph)))*(delta**2)
+        S = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(ph**2)))*(delta**2)
+        W = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(mask)))*(delta**2)
+        delta_f = 1/(N_size[0]*delta)
+        
+        fft_size_a = np.shape(W*np.conjugate(W))        
+        w2 = np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(W*np.conjugate(W))))*((fft_size_a[0]*delta_f)**2)
+        
+        fft_size_b = np.shape(np.real(S*np.conjugate(W)-np.abs(P)))
+        D = 2 * (np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(np.real(S*np.conjugate(W)-np.abs(P)))))) * ((fft_size_b[0]*delta_f)**2) / w2 * mask
+        
+        return D
+        
+    def radial(self,data):
+
+        #Radially averaging input array, reduces necessary iterations
+        m,n = np.shape(data)
+        centerX = round(m/2)+1
+        centerY = centerX
+
+        y, x = np.indices((data.shape))
+        r = np.sqrt((x - centerX)**2 + (y - centerY)**2)
+        r = r.astype(np.int)
+
+        tbin = np.bincount(r.ravel(), data.ravel())
+        nr = np.bincount(r.ravel())
+        radialprofile = tbin / nr
+        
+        return radialprofile
