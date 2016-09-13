@@ -217,6 +217,17 @@ class wavepy:
         c_a = (gamma(0.5*(5.0-na))*a*2.0*pi/3.0)**(1.0/(na-5.0))
 
         fm = c_a/self.l0   # Inner scale frequency(1/m) 
+        
+        # Set up parameters for Kolmogorov PSD
+        nae = 22/6.0 #Normalized alpha value
+        Bnume = gamma(nae/2.0)
+        Bdenome = 2.0**(2.0-nae)*pi*nae*gamma(-nae/2.0)
+        conee = (2.0* (8.0/(nae-2.0) *gamma(2.0/(nae-2.0)))**((nae-2.0)/2.0))
+        Bface = (2.0*pi)**(2.0-nae) * (Bnume/Bdenome)
+        ae = gamma(nae-1.0)*cos(nae*pi/2.0)/(4.0*pi**2.0)
+        c_ae = (gamma(0.5*(5.0-nae))*ae*2.0*pi/3.0)**(1.0/(nae-5.0))
+        fme = c_ae/self.l0   # Inner scale frequency(1/m)         
+        
         f0 = 1.0/self.L0   # Outer scale frequency
         # Create frequency sample grid
         fx = np.arange(-self.N/2.0, self.N/2.0) * del_f;
@@ -232,9 +243,20 @@ class wavepy:
         # Sample Turbulence PSD
         PSD_phi = (cone * Bfac * ((b*c)**(-na/2.0)) * (self.r0scrn**(2.0-na)) * np.exp(-(f/fm)**2.0) \
         /((f**2.0 + f0**2.0)**(na/2.0)));
+        
+        tot_NOK = np.sum(PSD_phi)
+        
+        # Kolmogorov equivalent and enforce isotropy
+        # Sample Turbulence PSD
+        PSD_phie = (conee * Bface * (self.r0scrn**(2.0-nae)) * np.exp(-(f/fme)**2.0) \
+        /((f**2.0 + f0**2.0)**(nae/2.0)));
+        
+        tot_OK = np.sum(PSD_phie)
+        
+        PSD_phi = (tot_OK/tot_NOK) * PSD_phi
    
         #PSD_phi = cone*Bfac* (r0**(2-na)) * f**(-na/2)  # Kolmogorov PSD
-        PSD_phi[cen,cen]=0.0;
+        PSD_phi[np.int(cen),np.int(cen)]=0.0;
 
         # Create a random field that is circular complex Guassian
         cn = (np.random.randn(self.N,self.N) + 1j*np.random.randn(self.N,self.N) )
