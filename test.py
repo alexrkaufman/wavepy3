@@ -8,4 +8,4 @@ import wavepy
 
 X = wavepy.wavepy();
 
-X.Validate()
+X.Validate(5)

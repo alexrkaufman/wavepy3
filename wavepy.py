@@ -515,26 +515,33 @@ class wavepy:
         
         return radialprofile
         
-    def Validate(self):
-                
-        #adjust to 3D when switching to multiple screens
+    def Validate(self,nruns):
+        
         phz_FT = np.zeros((self.N,self.N))
-        phz_FT = self.PhaseScreen()
-        phz_FT = self.StructFunc(phz_FT)
-        phz_FT = self.radial(phz_FT)
-        
-        #Correcting size of phz_FT due to tbin error
-        phz_FT = phz_FT[0:(self.N/2)]
-        phz_FT = phz_FT[::-1]
-        
+        phz_FT_temp = phz_FT
         phz_SH = np.zeros((self.N,self.N))
-        phz_SH = self.SubHarmonicComp(1)+self.PhaseScreen()
-        phz_SH = self.StructFunc(phz_SH)
-        phz_SH = self.radial(phz_SH)
+        phz_SH_temp = phz_SH
         
-        #Correcting size of phz_FT due to tbin error
+        #Generating multiple phase screens
+        for j in range(0,nruns):
+            phz_FT_temp = self.PhaseScreen()
+            #using phase screens from ^ so that time isn't wasted generating
+            #screens for the SubHarmonic case
+            phz_SH_temp = self.SubHarmonicComp(1) + phz_FT_temp            
+            
+            phz_FT_temp = self.StructFunc(phz_FT_temp)
+            phz_SH_temp = self.StructFunc(phz_SH_temp)
+            phz_FT = phz_FT + phz_FT_temp            
+            phz_SH = phz_SH + phz_SH_temp
+        
+        #Averaging the runs and correct bin size
+        phz_FT = self.radial(phz_FT)/nruns
+        phz_SH = self.radial(phz_SH)/nruns
+        phz_FT = phz_FT[0:(self.N/2)]
+        phz_FT = phz_FT[::-1]  
         phz_SH = phz_SH[0:(self.N/2)]
         phz_SH = phz_SH[::-1]
+
         
         #array of values for normalized r to plot x-axis
         cent_dist = np.zeros(self.N/2)
@@ -546,6 +553,7 @@ class wavepy:
         theory_val = np.zeros(self.N/2)
         theory_val = 6.88*(cent_dist)**(5.0/3.0)
         
+        #Plotting 3 options, with blue=theory, green=FT, and red=SH in current order
         plt.plot(cent_dist,theory_val)
         plt.plot(cent_dist,phz_FT)
         plt.plot(cent_dist,phz_SH)
