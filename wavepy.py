@@ -9,9 +9,10 @@
 
 import numpy as np
 from math import pi, gamma, cos, sin
+import matplotlib.pyplot as plt
 
 class wavepy:
-    def __init__(self,simOption=0,N=256,SideLen=1.28,NumScr=10,DRx=0.1,dx=5e-3,
+    def __init__(self,simOption=0,N=256,SideLen=1.0,NumScr=10,DRx=0.1,dx=5e-3,
                  wvl=1e-6,PropDist=10e3,Cn2=1e-16,loon=1,aniso=1.0,Rdx=5e-3):
         self.N = N                      # number of grid points per side
         self.SideLen = SideLen          # Length of one side of square phase secreen [m]
@@ -478,12 +479,13 @@ class wavepy:
     def StructFunc(self,ph):
         
         # Define mask construction
-        mask = self.MakePupil(self.SideLen/2)        
+        mask = self.MakePupil(self.SideLen/2)  
         delta = self.SideLen/self.N      
         
         
         N_size = np.shape(ph) #Make sure to reference 0th element later
         ph = ph*mask
+        
         P = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(ph)))*(delta**2)
         S = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(ph**2)))*(delta**2)
         W = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(mask)))*(delta**2)
@@ -506,10 +508,46 @@ class wavepy:
 
         y, x = np.indices((data.shape))
         r = np.sqrt((x - centerX)**2 + (y - centerY)**2)
-        r = r.astype(np.int)
-
-        tbin = np.bincount(r.ravel(), data.ravel())
+        r = r.astype(np.int)              
+        tbin = np.bincount(r.ravel(), np.abs(data.ravel()))
         nr = np.bincount(r.ravel())
         radialprofile = tbin / nr
         
         return radialprofile
+        
+    def Validate(self):
+                
+        #adjust to 3D when switching to multiple screens
+        phz_FT = np.zeros((self.N,self.N))
+        phz_FT = self.PhaseScreen()
+        phz_FT = self.StructFunc(phz_FT)
+        phz_FT = self.radial(phz_FT)
+        
+        #Correcting size of phz_FT due to tbin error
+        phz_FT = phz_FT[0:(self.N/2)]
+        phz_FT = phz_FT[::-1]
+        
+        phz_SH = np.zeros((self.N,self.N))
+        phz_SH = self.SubHarmonicComp(1)+self.PhaseScreen()
+        phz_SH = self.StructFunc(phz_SH)
+        phz_SH = self.radial(phz_SH)
+        
+        #Correcting size of phz_FT due to tbin error
+        phz_SH = phz_SH[0:(self.N/2)]
+        phz_SH = phz_SH[::-1]
+        
+        #array of values for normalized r to plot x-axis
+        cent_dist = np.zeros(self.N/2)
+        r_size = (0.5*self.SideLen)/(0.5*self.N)
+        for i in range(0,(self.N/2)):
+            cent_dist[i] = (i*r_size)/(self.r0)
+    
+        #Defining theoretical equation
+        theory_val = np.zeros(self.N/2)
+        theory_val = 6.88*(cent_dist)**(5.0/3.0)
+        
+        plt.plot(cent_dist,theory_val)
+        plt.plot(cent_dist,phz_FT)
+        plt.plot(cent_dist,phz_SH)
+
+        
