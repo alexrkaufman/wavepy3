@@ -494,8 +494,12 @@ class wavepy:
         fft_size_a = np.shape(W*np.conjugate(W))        
         w2 = np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(W*np.conjugate(W))))*((fft_size_a[0]*delta_f)**2)
         
-        fft_size_b = np.shape(np.real(S*np.conjugate(W)-np.abs(P)))
-        D = 2 * (np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(np.real(S*np.conjugate(W)-np.abs(P)))))) * ((fft_size_b[0]*delta_f)**2) / w2 * mask
+        fft_size_b = np.shape(np.real(S*np.conjugate(W))-np.abs(P)**2)
+        D = 2 * ((np.fft.ifftshift(np.fft.ifft2(np.fft.ifftshift(np.real(S*np.conjugate(W))-np.abs(P)**2)))) * ((fft_size_b[0]*delta_f)**2) )
+        
+        D = D/w2
+        
+        D = np.abs(D) * mask
         
         return D
         
