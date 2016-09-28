@@ -293,8 +293,6 @@ class wavepy:
         f0 = 1/self.L0
         lof_phz = np.zeros((self.N,self.N))
         
-        a = self.N/2
-        
         temp_m = np.linspace(-0.5,0.5,self.N)
         
         m_indices, n_indices = np.meshgrid(temp_m, -1*np.transpose(temp_m))
@@ -503,22 +501,6 @@ class wavepy:
         
         return D
         
-    def radial(self,data):
-
-        #Radially averaging input array, reduces necessary iterations
-        m,n = np.shape(data)
-        centerX = round(m/2)+1
-        centerY = centerX
-
-        y, x = np.indices((data.shape))
-        r = np.sqrt((x - centerX)**2 + (y - centerY)**2)
-        r = r.astype(np.int)              
-        tbin = np.bincount(r.ravel(), np.abs(data.ravel()))
-        nr = np.bincount(r.ravel())
-        radialprofile = tbin / nr
-        
-        return radialprofile
-        
     def Validate(self,nruns):
         
         phz_FT = np.zeros((self.N,self.N))
@@ -539,12 +521,20 @@ class wavepy:
             phz_SH = phz_SH + phz_SH_temp
         
         #Averaging the runs and correct bin size
-        phz_FT = self.radial(phz_FT)/nruns
-        phz_SH = self.radial(phz_SH)/nruns
-        phz_FT = phz_FT[0:(self.N/2)]
-        phz_FT = phz_FT[::-1]  
-        phz_SH = phz_SH[0:(self.N/2)]
-        phz_SH = phz_SH[::-1]
+        phz_FT = phz_FT/nruns
+        phz_SH = phz_SH/nruns
+        m,n = np.shape(phz_FT)
+        centerX = round(m/2)+1
+        
+        phz_FT_disp = np.ones(self.N/2)
+        phz_FT_disp = phz_FT[:,centerX]
+        phz_SH_disp = np.ones(self.N/2)
+        phz_SH_disp = phz_SH[:,centerX]
+        
+        phz_FT_disp = phz_FT_disp[0:(self.N/2)]
+        phz_FT_disp = phz_FT_disp[::-1]
+        phz_SH_disp = phz_SH_disp[0:(self.N/2)]
+        phz_SH_disp = phz_SH_disp[::-1]
 
         
         #array of values for normalized r to plot x-axis
@@ -559,7 +549,9 @@ class wavepy:
         
         #Plotting 3 options, with blue=theory, green=FT, and red=SH in current order
         plt.plot(cent_dist,theory_val)
-        plt.plot(cent_dist,phz_FT)
-        plt.plot(cent_dist,phz_SH)
+        plt.plot(cent_dist,phz_FT_disp)
+        plt.plot(cent_dist,phz_SH_disp)
+        print phz_FT_disp
+
 
         
