@@ -266,10 +266,9 @@ class wavepy:
         cn = cn * np.sqrt(PSD_phi)*del_f;
 
         # Inverse FFT
-        phz_temp  = np.fft.ifft2(np.fft.fftshift(cn))*(self.N**2);
+        phz_temp  = np.fft.ifft2(np.fft.fftshift(cn))*((self.N)**2);
 
         # Phase screens 
-       # phz1 = np.real(phz_temp)-np.mean(np.real(phz_temp));
         phz1 = np.real(phz_temp);
 
         return phz1
@@ -338,6 +337,7 @@ class wavepy:
             lof_phz = lof_phz + temp_phz
         
         lof_phz = np.real(lof_phz) - np.mean(np.real(lof_phz))
+
  
         return lof_phz    
         
@@ -513,7 +513,7 @@ class wavepy:
             phz_FT_temp = self.PhaseScreen()
             #using phase screens from ^ so that time isn't wasted generating
             #screens for the SubHarmonic case
-            phz_SH_temp = self.SubHarmonicComp(1) + phz_FT_temp            
+            phz_SH_temp = self.SubHarmonicComp(3) + phz_FT_temp            
             
             phz_FT_temp = self.StructFunc(phz_FT_temp)
             phz_SH_temp = self.StructFunc(phz_SH_temp)
@@ -541,7 +541,7 @@ class wavepy:
         cent_dist = np.zeros(self.N/2)
         r_size = (0.5*self.SideLen)/(0.5*self.N)
         for i in range(0,(self.N/2)):
-            cent_dist[i] = (i*r_size)/(self.r0)
+            cent_dist[i] = (i*r_size)/(self.r0scrn)
     
         #Defining theoretical equation
         theory_val = np.zeros(self.N/2)
@@ -551,7 +551,7 @@ class wavepy:
         plt.plot(cent_dist,theory_val)
         plt.plot(cent_dist,phz_FT_disp)
         plt.plot(cent_dist,phz_SH_disp)
-        print phz_FT_disp
+
 
 
         
