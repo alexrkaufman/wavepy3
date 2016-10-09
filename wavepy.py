@@ -314,7 +314,7 @@ class wavepy:
             f = np.sqrt((f_x**2)/(b**2) + (f_y**2)/(c**2))
             #Sample PSD
             PSD_fi = cone*Bfac*((b*c)**(-na/2))*(self.r0scrn)**(2-na)*(f**2 + f0**2)**(-na/2)
-            PSD_fi[3,3] = 0;
+
             
             #Generate normal circ complex RV
             w = np.random.randn(6,6) + 1j*np.random.randn(6,6)
@@ -477,7 +477,7 @@ class wavepy:
     def StructFunc(self,ph):
         
         # Define mask construction
-        mask = self.MakePupil(self.SideLen/2)  
+        mask = self.MakePupil(self.SideLen/4)  
         delta = self.SideLen/self.N      
         
         
@@ -503,6 +503,9 @@ class wavepy:
         
     def Validate(self,nruns):
         
+        self.r0scrn = 0.5*self.SideLen/20
+        self.N = 512
+        
         phz_FT = np.zeros((self.N,self.N))
         phz_FT_temp = phz_FT
         phz_SH = np.zeros((self.N,self.N))
@@ -513,7 +516,7 @@ class wavepy:
             phz_FT_temp = self.PhaseScreen()
             #using phase screens from ^ so that time isn't wasted generating
             #screens for the SubHarmonic case
-            phz_SH_temp = self.SubHarmonicComp(3) + phz_FT_temp            
+            phz_SH_temp = self.SubHarmonicComp(1) + phz_FT_temp            
             
             phz_FT_temp = self.StructFunc(phz_FT_temp)
             phz_SH_temp = self.StructFunc(phz_SH_temp)
@@ -551,6 +554,8 @@ class wavepy:
         plt.plot(cent_dist,theory_val)
         plt.plot(cent_dist,phz_FT_disp)
         plt.plot(cent_dist,phz_SH_disp)
+        plt.xlim((0,10))
+        plt.ylim((0,400))
 
 
 
