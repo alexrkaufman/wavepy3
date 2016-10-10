@@ -30,9 +30,9 @@ class wavepy:
         self.aniso = aniso              # Anisotropy magnitude
         self.alpha = 22.0               # Power Law exponent 22 = 11/3 (Kolmogorov)
         self.k = 2*pi / self.wvl        # Optical wavenumber [rad/m]
-        self.NumSubHarmonics = 5;       # Number of subharmonics 
-        self.DTx = 0.1;                  # Transmitting aperture size for Gauss [m]
-        self.w0 = (np.exp(-1) * self.DTx); 
+        self.NumSubHarmonics = 5        # Number of subharmonics 
+        self.DTx = 0.1                  # Transmitting aperture size for Gauss [m]
+        self.w0 = (np.exp(-1) * self.DTx) 
 
      
         # Include sub-harmonic compensation?
@@ -57,17 +57,21 @@ class wavepy:
         
         if simOption == 0:
             # Plane Wave source (default)
-             self.Source = np.ones([self.N,self.N])                       
+            self.Source = self.PlaneSource()                     
 
 
         elif simOption == 1:
-            # Spherical Wave Propagation
-            self.Source = self.pointSource() 
+            # Spherical Wave Source
+            self.Source = self.PointSource() 
 
 
         elif simOption == 2:
-            #Collimated Gaussian source
-            self.source = self.gaussianBeam()
+            #Collimated Gaussian Source
+            self.Source = self.CollimatedGaussian()
+            
+        elif simOption == 3:
+            #Flatte Point Source
+            self.Source = self.FlattePointSource()
         
         x = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.Rdx
         y = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.Rdx 
@@ -231,45 +235,45 @@ class wavepy:
         
         f0 = 1.0/self.L0   # Outer scale frequency
         # Create frequency sample grid
-        fx = np.arange(-self.N/2.0, self.N/2.0) * del_f;
+        fx = np.arange(-self.N/2.0, self.N/2.0) * del_f
         fx, fy = np.meshgrid(fx,-1*fx)
         
         # Apply affine transform
         tx = fx*cos(thetar) + fy*sin(thetar)
-        ty = -1.0*fx*sin(thetar) + fy*cos(thetar);
+        ty = -1.0*fx*sin(thetar) + fy*cos(thetar)
         
         # Scalar frequency grid 
-        f = np.sqrt((tx**2.0)/(b**2.0) + (ty**2.0)/(c**2.0));
+        f = np.sqrt((tx**2.0)/(b**2.0) + (ty**2.0)/(c**2.0))
 
         # Sample Turbulence PSD
         PSD_phi = (cone * Bfac * ((b*c)**(-na/2.0)) * (self.r0scrn**(2.0-na)) * np.exp(-(f/fm)**2.0) \
-        /((f**2.0 + f0**2.0)**(na/2.0)));
+        /((f**2.0 + f0**2.0)**(na/2.0)))
         
         tot_NOK = np.sum(PSD_phi)
         
         # Kolmogorov equivalent and enforce isotropy
         # Sample Turbulence PSD
         PSD_phie = (conee * Bface * (self.r0scrn**(2.0-nae)) * np.exp(-(f/fme)**2.0) \
-        /((f**2.0 + f0**2.0)**(nae/2.0)));
+        /((f**2.0 + f0**2.0)**(nae/2.0)))
         
         tot_OK = np.sum(PSD_phie)
         
         PSD_phi = (tot_OK/tot_NOK) * PSD_phi
    
         #PSD_phi = cone*Bfac* (r0**(2-na)) * f**(-na/2)  # Kolmogorov PSD
-        PSD_phi[np.int(cen),np.int(cen)]=0.0;
+        PSD_phi[np.int(cen),np.int(cen)]=0.0
 
         # Create a random field that is circular complex Guassian
         cn = (np.random.randn(self.N,self.N) + 1j*np.random.randn(self.N,self.N) )
 
         # Filter by turbulence PSD
-        cn = cn * np.sqrt(PSD_phi)*del_f;
+        cn = cn * np.sqrt(PSD_phi)*del_f
 
         # Inverse FFT
-        phz_temp  = np.fft.ifft2(np.fft.fftshift(cn))*((self.N)**2);
+        phz_temp  = np.fft.ifft2(np.fft.fftshift(cn))*((self.N)**2)
 
         # Phase screens 
-        phz1 = np.real(phz_temp);
+        phz1 = np.real(phz_temp)
 
         return phz1
         
@@ -298,7 +302,7 @@ class wavepy:
         
         temp_mp = np.linspace(-2.5,2.5,6)
         
-        m_prime_indices,n_prime_indices = np.meshgrid(temp_mp,-1*np.transpose(temp_mp));
+        m_prime_indices,n_prime_indices = np.meshgrid(temp_mp,-1*np.transpose(temp_mp))
         
         
         for Np in range(1,nsub+1):
@@ -308,8 +312,8 @@ class wavepy:
             dqp = dq/(3.0**Np)
             #Set samples
             
-            f_x = 3**(-Np)*m_prime_indices*dq;
-            f_y = 3**(-Np)*n_prime_indices*dq;
+            f_x = 3**(-Np)*m_prime_indices*dq
+            f_y = 3**(-Np)*n_prime_indices*dq
             
             f = np.sqrt((f_x**2)/(b**2) + (f_y**2)/(c**2))
             #Sample PSD
@@ -452,7 +456,7 @@ class wavepy:
     def SetCn2Rytov(self,UserRytov):
         # Change rytov number and variance to user specified value        
         self.rytovNum = UserRytov
-        self.rytov = self.rytovNum**2;
+        self.rytov = self.rytovNum**2
     
         rytov_denom = 1.23*(self.k)**(7.0/6.0)*(self.PropDist)**(11.0/6.0)
 
