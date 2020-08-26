@@ -2,7 +2,7 @@
 #  Authors: Alex Kaufman
 #  Based on WavePy by: Jeff Beck,  Celina Bekins,  Jeremy Bos
 #  Montana State University 2020
-#  Released under BSD attribution license please reference
+# TODO Choose a license
 
 # TODO: Modify this to be compatible with python3
 # TODO: Modify this to conform to PEP 8
@@ -14,7 +14,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-class WavePy:
+class WavePy3:
+    """WavePy3
+
+    A reworking of the wavepy package by Jeff Beck, Celina Bekins, and
+    Jeremy Bos. The plan of this is to rewrite as a more user friendly package.
+    A goal is to separate different concepts into their own classes and also
+    improve how well it conforms to the PEP style guides.
+    """
 
     def __init__(self, simOption=0, N=256, SideLen=1.0, NumScr=10, DRx=0.1,
                  dx=5e-3, wvl=1e-6, PropDist=10e3, Cn2=1e-16, loon=1,
@@ -56,7 +63,7 @@ class WavePy:
 
         x = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.dx
         y = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.dx
-        self.x1,  self.y1 = np.meshgrid(x,  y)
+        self.x1, self.y1 = np.meshgrid(x, y)
         self.r1 = np.sqrt(self.x1**2 + self.y1**2)
 
         if simOption == 0:
@@ -77,7 +84,7 @@ class WavePy:
 
         x = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.Rdx
         y = np.linspace(-self.N/2, (self.N/2)-1, self.N) * self.Rdx
-        self.xR,  self.yR = np.meshgrid(x,  y)
+        self.xR, self.yR = np.meshgrid(x, y)
         self.rR = np.sqrt(self.xR**2 + self.yR**2)
 
         # Set Propagation Geometry / Screen placement
@@ -151,7 +158,6 @@ class WavePy:
         # Source return
         return source
 
-
     def MakeSGB(self):
         # Construction of Super Gaussian Boundary
         rad = self.r1 * (self.N)
@@ -159,8 +165,6 @@ class WavePy:
         sg = np.exp(-((rad / w)**16.0))
 
         return sg
-
-
 
     def MakePupil(self, D_eval):
         # Target pupil creation
@@ -250,11 +254,11 @@ class WavePy:
         fx = np.arange(-self.N/2.0,  self.N/2.0) * del_f
         fx,  fy = np.meshgrid(fx, -1*fx)
 
-        #  Apply affine transform
+        # Apply affine transform
         tx = fx*cos(thetar) + fy*sin(thetar)
         ty = -1.0*fx*sin(thetar) + fy*cos(thetar)
 
-        #  Scalar frequency grid
+        # Scalar frequency grid
         f = np.sqrt((tx**2.0)/(b**2.0) + (ty**2.0)/(c**2.0))
 
         #  Sample Turbulence PSD
@@ -313,7 +317,7 @@ class WavePy:
 
         temp_m = np.linspace(-0.5, 0.5, self.N)
 
-        m_indices,  n_indices = np.meshgrid(temp_m,  -1*np.transpose(temp_m))
+        m_indices, n_indices = np.meshgrid(temp_m, -1*np.transpose(temp_m))
 
         temp_mp = np.linspace(-2.5, 2.5, 6)
 
@@ -365,7 +369,7 @@ class WavePy:
 
         a = self.N/2
 
-        nx,  ny = np.meshgrid(range(-a, a), range(-a, a))
+        nx,  ny = np.meshgrid(list(range(-a, a)), list(range(-a, a)))
 
         #  Initial Propagation from source plane to first screen location
         P0 = np.exp(1j * (self.k / (2*self.dzProps[0])) * (self.r1**2)
@@ -407,7 +411,7 @@ class WavePy:
 
         a = self.N/2
 
-        nx,  ny = np.meshgrid(range(-a, a),  range(-a,  a))
+        nx,  ny = np.meshgrid(list(range(-a, a)), list(range(-a, a)))
 
         #  Initial Propagation from source plane to first screen location
         P0 = np.exp(1j * (self.k / (2*self.dzProps[0]))
@@ -472,7 +476,7 @@ class WavePy:
         #  Find Cn2
         self.Cn2 = self.rytov/rytov_denom
 
-        #  Set derived values
+        # Set derived values
         self.r0 = (0.423 * (self.k)**2 * self.Cn2 * self.PropDist)**(-3.0/5.0)
         self.r0scrn = (0.423 * ((self.k)**2) * self.Cn2
                        * (self.PropDist / self.NumScr))**(-3.0/5.0)
@@ -484,7 +488,7 @@ class WavePy:
 
     def EvalSI(self):
 
-        temp_s = (np.abs(self.Output)**2) * self.makePupil(self.DRx)
+        temp_s = (np.abs(self.Output)**2) * self.MakePupil(self.DRx)
         temp_s = temp_s.ravel()[np.flatnonzero(temp_s)]
         s_i = (np.mean(temp_s**2) / (np.mean(temp_s)**2)) - 1
 
@@ -492,7 +496,7 @@ class WavePy:
 
     def StructFunc(self, ph):
 
-        #  Define mask construction
+        # Define mask construction
         mask = self.MakePupil(self.SideLen/4)
         delta = self.SideLen/self.N
 
@@ -555,24 +559,24 @@ class WavePy:
         m, n = np.shape(phz_FT)
         centerX = round(m/2)+1
 
-        phz_FT_disp = np.ones(self.N/2)
+        phz_FT_disp = np.ones(self.N // 2)
         phz_FT_disp = phz_FT[:, centerX]
-        phz_SH_disp = np.ones(self.N/2)
+        phz_SH_disp = np.ones(self.N // 2)
         phz_SH_disp = phz_SH[:, centerX]
 
-        phz_FT_disp = phz_FT_disp[0:(self.N/2)]
+        phz_FT_disp = phz_FT_disp[0:(self.N // 2)]
         phz_FT_disp = phz_FT_disp[::-1]
-        phz_SH_disp = phz_SH_disp[0:(self.N/2)]
+        phz_SH_disp = phz_SH_disp[0:(self.N // 2)]
         phz_SH_disp = phz_SH_disp[::-1]
 
         # array of values for normalized r to plot x-axis
-        cent_dist = np.zeros(self.N/2)
+        cent_dist = np.zeros(self.N // 2)
         r_size = (0.5*self.SideLen)/(0.5*self.N)
-        for i in range(0, (self.N/2)):
+        for i in range(0, (self.N // 2)):
             cent_dist[i] = (i*r_size)/(self.r0scrn)
 
         # Defining theoretical equation
-        theory_val = np.zeros(self.N/2)
+        theory_val = np.zeros(self.N // 2)
         theory_val = 6.88*(cent_dist)**(5.0/3.0)
 
         # Plotting 3 options,  with
@@ -582,5 +586,4 @@ class WavePy:
         plt.plot(cent_dist, phz_SH_disp)
         plt.xlim((0, 10))
         plt.ylim((0, 400))
-
-#  LocalWords:  subharmonics
+        plt.show()
