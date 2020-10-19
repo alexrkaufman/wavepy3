@@ -42,3 +42,12 @@ def ift2(G, df):
     g = ifftshift(ifft2(ifftshift(G))) * (N * df)**2
 
     return g
+
+def super_gaussian_boundary(r_coord, N):
+
+    # Construction of Super Gaussian Boundary
+    rad = r_coord * (N)
+    w = 0.55 * N
+    sg = np.exp(-((rad / w)**16.0))
+
+    return sg
