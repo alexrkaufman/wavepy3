@@ -3,10 +3,8 @@
 # to the schmidt validation graphs for atmospheric conditions.
 # create a phase screen and plot it
 
-import sys
 import matplotlib.pyplot as plt
-sys.path.insert(0, '/home/alex/workspace/spectrum/python/WavePy/Atmos')
-from Atmos import Atmos
+import wavepy3 as wp
 
 D = 2
 N = 256
@@ -23,7 +21,7 @@ atmos_parms = {
 
 z = [0, 50e3]
 
-a1 = Atmos(256, z, [dx, dx], **atmos_parms)
+a1 = wp.Atmos(256, z, [dx, dx], **atmos_parms)
 
 for screen in a1.screens:
     plt.imshow(screen)

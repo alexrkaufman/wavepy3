@@ -2,11 +2,9 @@
 # This should do what test/Validate function does.
 # TODO reimplement the WavePy3 Validate function
 
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
-sys.path.insert(0, '/home/alex/workspace/spectrum/python/WavePy/Atmos')
-from Atmos import Atmos
+import wavepy3 as wp
 
 def main():
     nruns = 5
@@ -35,8 +33,8 @@ def main():
         'wvl': 1e-6
     }
 
-    atmos_FT = Atmos(N, z, dx, **atmos_parms_FT)
-    atmos_SH = Atmos(N, z, dx, **atmos_parms_SH)
+    atmos_FT = wp.Atmos(N, dx, **atmos_parms_FT)
+    atmos_SH = wp.Atmos(N, dx, **atmos_parms_SH)
 
     phz_FT = np.zeros((N, N))
     phz_FT_temp = phz_FT
@@ -45,10 +43,10 @@ def main():
 
     # Generating multiple phase screens
     for j in range(0, nruns):
-        phz_FT_temp = atmos_FT.screens[j]
+        phz_FT_temp = atmos_FT.screen[j]
         # using phase screens from ^ so that time isn't wasted generating
         # screens for the SubHarmonic case
-        phz_SH_temp = atmos_SH.screens[j]
+        phz_SH_temp = atmos_SH.screen[j]
 
         phz_FT_temp = StructFunc(phz_FT_temp, D, N)
         phz_SH_temp = StructFunc(phz_SH_temp, D, N)
