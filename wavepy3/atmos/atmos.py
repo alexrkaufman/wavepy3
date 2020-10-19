@@ -227,3 +227,6 @@ class Atmos:
 
     def __getitem__(self, key):
         return self.screen[key]
+
+    def __len__(self):
+        return len(self.screen)
