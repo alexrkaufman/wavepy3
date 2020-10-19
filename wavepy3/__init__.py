@@ -1,2 +1,2 @@
 from . import atmos
-from . import prop
+from .prop import split_step as propagate
