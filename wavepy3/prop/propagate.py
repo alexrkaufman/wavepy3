@@ -4,7 +4,7 @@ from numpy import (exp, pi, meshgrid, linspace, sqrt)
 from numpy.fft import (fft2, fftshift, ifft2, ifftshift)
 from ..atmos import Atmos
 
-def split_step(field_in, wvl, dx_0, dx_n, proplocs, atmos=None):
+def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
 
     n_gridpts = len(field_in)
     nx = linspace(-n_gridpts/2, n_gridpts/2, n_gridpts)
@@ -15,9 +15,9 @@ def split_step(field_in, wvl, dx_0, dx_n, proplocs, atmos=None):
     # generate sgb
     sgb = super_gaussian_boundary(sqrt(nx**2 + ny**2), 0.55 * n_gridpts)
 
-    n_prop = len(proplocs)
-    dz_prop = proplocs[1:] - proplocs[:-1]
-    prop_frac = proplocs / proplocs[-1]
+    n_prop = len(z_prop)
+    dz_prop = z_prop[1:] - z_prop[:-1]
+    prop_frac = dz_prop / z_prop[-1]
 
     sampling = (dx_n - dx_0) * prop_frac + dx_0
     samplingratio = sampling[1:] / sampling[:-1]
