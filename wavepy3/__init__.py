@@ -1,2 +1,2 @@
-from . import atmos
+from .atmos import Atmos
 from . import prop

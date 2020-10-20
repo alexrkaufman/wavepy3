@@ -1,10 +1,25 @@
 import numpy as np
 from numpy.random import default_rng
 from .utils import ft2, ift2
+from . import psd
+from . import screen_method
 
 rng = default_rng()
 
 pi = np.pi
+
+screen_method_dict = {
+    'ft_sh': screen_method.ft_sh_phase_screen,
+    'ft': screen_method.ft_phase_screen,
+    'vacuum': screen_method.vacuum
+}
+
+psd_dict = {
+    'kolmogorov': psd.kolmogorov,
+    'vonKarman': psd.vonkarman,
+    'modified_vonKarman': psd.modified_vonkarman,
+    'wavepy_og': psd.wavepy_og
+}
 
 
 class Atmos:
@@ -31,151 +46,61 @@ class Atmos:
 
         self.n_gridpts = n_gridpts
         self.dx_sampling = dx_sampling
-        self.screen_method = settings['screen_method']
+        self.screen_method_name = settings['screen_method_name']
+        self.screen_method = screen_method_dict[self.screen_method_name]
+        self.settings = {
+            k: settings[k]
+            for k in settings.keys()
+                       - {'screen_method_name', 'psd_name'}}
 
         try:
-            self.atmos_parms = settings['atmos_parms']
+            self.psd_name = settings['psd_name']
+            self.psd = self.__psd_setup()
         except KeyError:
-            self.atmos_parms = {}
+            self.psd = None
 
-        try:
-            self.psd_type = settings['psd']
-        except KeyError:
-            self.psd_type = None
+        self.r0s = [0.5] * len(dx_sampling)
 
-        self.screen = [self.phase_screen(n_gridpts, **self.atmos_parms)
-                       for i in range(len(dx_sampling))]
+        self.screen = [self.screen_method(*inputs)
+                       for inputs in self.__screen_method_input()]
 
-    def psd(self, **atmos_parms):
+    def __screen_method_input(self):
+
+        screen_method_input_dict = {
+            'vacuum': ['N'],
+            'ft': ['N', 'dx', 'r0', 'psd'],
+            'ft_sh': ['N', 'dx', 'n_subharm', 'r0', 'psd']
+            }
+
+        keys = screen_method_input_dict[self.screen_method_name]
+        a = {'N': self.n_gridpts, 'psd': self.psd, **self.settings}
+
+        for (dx, r0) in zip(self.dx_sampling, self.r0s):
+            a = {'dx': dx, 'r0': r0, **a}
+            yield [a[key] for key in keys]
+
+    def __psd_setup(self):
         ''' psd function
 
         The psd function is meant to alias whichever psd someone wants to use.
         The idea is that this can be swapped out at will and we wont have to
         change other code.
         '''
-        # TODO spin psds out into their own files (way way down the line)
-        psd_dict = {
-            'vonKarman': self.__vonKarman_psd,
-            'wavepy_og': self.__wavepy_og,
+
+        psd_input_dict = {
+            'kolmogorov': [],
+            'vonKarman': ['L0'],
+            'modified_vonKarman': ['L0', 'l0']
         }
 
-        psdfn = psd_dict[self.psd_type]
+        psd_raw = psd_dict[self.psd_name]
 
-        return psdfn(**atmos_parms)
+        setting_names = psd_input_dict[self.psd_name]
 
-    def phase_screen(self, n_gridpts, **atmos_parms):
-        ''' Phase screen calculation
+        psdfn = psd_raw(*[self.settings[setting_name]
+                          for setting_name in setting_names])
 
-        This should be the generic top level function similar to psd.
-
-        TODO Improve documentation
-        TODO Make this generic like the psd function
-        '''
-        screen_method_dict = {
-            'ft_sh': self.ft_sh_phase_screen,
-            'ft': self.ft_phase_screen,
-            'vacuum': self.vacuum
-        }
-
-        phase_screenfn = screen_method_dict[self.screen_method]
-
-        return phase_screenfn(n_gridpts, **atmos_parms)
-
-    def ft_sh_phase_screen(self, N, dx, r0, L0=float('inf'), l0=0):
-        ''' phase screen with subharmonic methods
-
-        This computes phase screens including subharmonics.
-
-        TODO improve documentation
-        '''
-
-        phz_hi = self.ft_phase_screen(N, dx, r0, L0, l0)
-        phz_lo = self.ft_sh(N, dx, r0, L0, l0)
-
-        return phz_hi + phz_lo
-
-    def ft_phase_screen(self, N, dx, r0, L0=float('inf'), l0=0):
-        """ft phase screen
-
-        fourier transform phase screen without subharmonics
-        on their own these do not do a good job approximating atmosphere
-
-        TODO improve documentation
-        """
-
-        df = 1 / (N * dx)  # Frequency grid spacing.
-        fx = np.linspace(-N / 2, N / 2, N, endpoint=False) * df
-
-        # create frequency grid and compute frequency radii
-        fx, fy = np.meshgrid(fx, fx)
-        f = np.sqrt(fx**2 + fy**2)
-
-        f0 = 1 / L0
-
-        try:
-            fm = 5.92 / l0 / (2 * pi)
-        except ZeroDivisionError:
-            fm = float('inf')
-
-        # setup PSD
-        psd_phi = self.psd(r0, f, fm, f0)
-        psd_phi[N // 2, N // 2] = 0
-
-        # get random Fourier coefficients
-        cn = ((rng.standard_normal([N, N]) + 1j * rng.standard_normal([N, N]))
-              * np.sqrt(psd_phi) * df)
-
-        phz = np.real(ift2(cn, 1))
-
-        return phz
-
-    def ft_sh(self, N, dx, r0, L0=float('inf'), l0=0):
-        ''' ft_sh
-
-        subharmonics for fourier transform phase screens
-
-        TODO Improve documentation
-        '''
-
-        D = N * dx
-
-        x = np.linspace(-D/2, D/2-dx, N)
-        x, y = np.meshgrid(x, x)
-
-        phz_lo = np.zeros([N, N])
-
-        for p in [1, 2, 3]:
-            df = 1 / (D * 3**p)
-
-            fx = np.linspace(-1, 1, 3)
-            fx, fy = np.meshgrid(fx, fx)
-
-            f = np.sqrt(fx**2 + fy**2)
-            f0 = 1 / L0
-
-            try:
-                fm = 5.92 / l0 / (2 * pi)
-            except ZeroDivisionError:
-                fm = float('inf')
-
-            psd_phi = self.psd(r0, f, fm, f0)
-            psd_phi[1, 1] = 0
-
-            cn = (complex(rng.normal(3), rng.normal(3))
-                  * np.sqrt(psd_phi) * df)
-
-            sub_harmonics = np.zeros([N, N])
-
-            for i in range(3):
-                for j in range(3):
-                    sub_harmonics = (sub_harmonics + cn[i, j]
-                                     * np.exp(1j * 2 * pi
-                                              * (fx[i, j] * x + fy[i, j] * y)))
-
-            phz_lo = phz_lo + sub_harmonics
-
-        phz_lo = np.real(phz_lo) - np.mean(np.real(phz_lo))
-        return phz_lo
+        return psdfn
 
     def __get_derived_parms(self, z, wvl, Cn2):
 
