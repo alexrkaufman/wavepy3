@@ -27,6 +27,7 @@ for screen in a1.screen:
 atmos_parms = {
     'screen_method_name': 'ft',
     'psd_name': 'modified_vonKarman',
+    'r0': 0.2,
     'L0': 100,
     'l0': 0.01
 }
