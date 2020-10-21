@@ -7,30 +7,30 @@ import matplotlib.pyplot as plt
 import wavepy3 as wp
 
 def main():
-    nruns = 5
+    n_screens = 5
 
     D = 2
     N = 512
-    z = [i for i in range(nruns)]
-    dx = [D / N] * 5
+    dx = [D / N] * n_screens
     r0 = 0.5 * D / 20
 
     atmos_parms_FT = {
-        'psd': 'vonKarman',
-        'screen_method': 'ft',
+        'psd_name': 'modified_vonKarman',
+        'screen_method_name': 'ft',
         'r0': r0,
         'l0': 0.01,
         'L0': 100,
-        'wvl': 1e-6
+        'wvl': 1e-6,
     }
 
     atmos_parms_SH = {
-        'psd': 'vonKarman',
-        'screen_method': 'ft_sh',
+        'psd_name': 'modified_vonKarman',
+        'screen_method_name': 'ft_sh',
+        'n_subharm': 4,
         'r0': r0,
         'l0': 0.01,
         'L0': 100,
-        'wvl': 1e-6
+        'wvl': 1e-6,
     }
 
     atmos_FT = wp.Atmos(N, dx, **atmos_parms_FT)
@@ -42,7 +42,7 @@ def main():
     phz_SH_temp = phz_SH
 
     # Generating multiple phase screens
-    for j in range(0, nruns):
+    for j in range(0, n_screens):
         phz_FT_temp = atmos_FT.screen[j]
         # using phase screens from ^ so that time isn't wasted generating
         # screens for the SubHarmonic case
@@ -54,10 +54,10 @@ def main():
         phz_SH = phz_SH + phz_SH_temp
 
     # Averaging the runs and correct bin size
-    phz_FT = phz_FT/nruns
-    phz_SH = phz_SH/nruns
+    phz_FT = phz_FT / n_screens
+    phz_SH = phz_SH / n_screens
     m, n = np.shape(phz_FT)
-    centerX = round(m/2)+1
+    centerX = round(m / 2) + 1
 
     phz_FT_disp = np.ones(N // 2)
     phz_FT_disp = phz_FT[:, centerX]
@@ -71,13 +71,13 @@ def main():
 
     # array of values for normalized r to plot x-axis
     cent_dist = np.zeros(N // 2)
-    r_size = (0.5*D)/(0.5*N)
+    r_size = (0.5 * D) / (0.5 * N)
     for i in range(0, (N // 2)):
-        cent_dist[i] = (i*r_size)/(r0)
+        cent_dist[i] = (i * r_size) / (r0)
 
     # Defining theoretical equation
     theory_val = np.zeros(N // 2)
-    theory_val = 6.88*(cent_dist)**(5.0/3.0)
+    theory_val = 6.88 * (cent_dist)**(5.0/3.0)
 
     # Plotting 3 options,  with
     # blue=theory,  green=FT,  and red=SH in current order
