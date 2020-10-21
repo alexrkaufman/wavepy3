@@ -59,7 +59,10 @@ class Atmos:
         except KeyError:
             self.psd = None
 
-        self.r0s = [0.5] * len(dx_sampling)
+        if self.screen_method_name == 'vacuum':
+            self.settings['r0'] = float('inf')
+
+        self.r0s = [self.settings['r0']] * len(dx_sampling)
 
         self.screen = [self.screen_method(*inputs)
                        for inputs in self.__screen_method_input()]
