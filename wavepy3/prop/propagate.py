@@ -19,11 +19,11 @@ def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
     dz_prop = z_prop[1:] - z_prop[:-1]
     prop_frac = z_prop / z_prop[-1]
 
-    sampling = (dx_n - dx_0) * prop_frac + dx_0
-    samplingratio = sampling[1:] / sampling[:-1]
+    delta = (dx_n - dx_0) * prop_frac + dx_0
+    samplingratio = delta[1:] / delta[:-1]
 
     if atmos is None:
-        atmos = Atmos(n_gridpts, sampling, screen_method='vacuum')
+        atmos = Atmos(n_gridpts, delta, screen_method='vacuum')
     else:
         raise Exception("Only vacuum propagation is implemented so far. "
                         + "Remove atmos input.")
@@ -37,7 +37,7 @@ def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
     Uin = field_in * Q1 * exp(1j * atmos[0])
 
     for (dz, dx, dx_ratio, phz) in zip(
-            dz_prop, sampling, samplingratio, atmos[1:]):
+            dz_prop, delta, samplingratio, atmos[1:]):
 
         UinSpec = ft2(Uin / dx_ratio, dx)
 
