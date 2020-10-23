@@ -17,7 +17,7 @@ def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
 
     n_prop = len(z_prop)
     dz_prop = z_prop[1:] - z_prop[:-1]
-    prop_frac = dz_prop / z_prop[-1]
+    prop_frac = z_prop / z_prop[-1]
 
     sampling = (dx_n - dx_0) * prop_frac + dx_0
     samplingratio = sampling[1:] / sampling[:-1]
