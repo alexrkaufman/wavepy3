@@ -12,10 +12,10 @@ def fresnel_prop_square(x_n, y_n, D_0, wvl, Z):
     beta1 = -sqrt(2) * (sqrt(N_F) + Y)
     beta2 = sqrt(2) * (sqrt(N_F) - Y)
 
-    ca1, sa1 = fresnel(alpha1)
-    ca2, sa2 = fresnel(alpha2)
-    cb1, sb1 = fresnel(beta1)
-    cb2, sb2 = fresnel(beta2)
+    sa1, ca1 = fresnel(alpha1)
+    sa2, ca2 = fresnel(alpha2)
+    sb1, cb1 = fresnel(beta1)
+    sb2, cb2 = fresnel(beta2)
 
     return (1 / (2 * 1j)
             * ((ca2 - ca1) + 1j * (sa2 - sa1))
