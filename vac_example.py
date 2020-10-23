@@ -29,18 +29,16 @@ def main():
                                                      wvl, z[-1])
     I_analytic = np.absolute(field_analytic)**2
 
-    fig, ax = plt.subplots(1, 2)
-    ax[0].imshow(I_in)
-    ax[1].imshow(I_out)
-    plt.show()
-
-    fig, ax = plt.subplots(1, 2)
+    fig, ax = plt.subplots(2, 2) #creates tuple fig#, [[ax1, ax2], [ax3 ,ax4]]
+    ax[0][0].imshow(I_in)  
+    ax[0][1].imshow(I_out)
+    
     sim_out = I_out[:, N // 2]
     analytic_out = I_analytic
-    ax[0].plot(x[N // 2, :], sim_out / np.amax(sim_out))
-    ax[0].plot(x[N // 2, :], analytic_out / np.amax(analytic_out))
-    ax[1].plot(x[N // 2, :], np.angle(field_out[:, N // 2]))
-    ax[1].plot(x[N // 2, :], np.angle(field_analytic))
+    ax[1][0].scatter(x[N // 2, :], sim_out / np.amax(sim_out),marker='x',color='k',)
+    ax[1][0].plot(x[N // 2, :], analytic_out / np.amax(analytic_out))
+    ax[1][1].scatter(x[N // 2, :], np.angle(field_out[:, N // 2]),marker='x',color='k')
+    ax[1][1].plot(x[N // 2, :], np.angle(field_analytic))
     plt.show()
 
 
