@@ -83,7 +83,7 @@ def ift2(G, df):
     TODO This needs better documentation for the same reason as ft2.
     """
 
-    N = G.shape[0]
+    N = len(G)
     g = ifftshift(ifft2(ifftshift(G))) * (N * df)**2
 
     return g
