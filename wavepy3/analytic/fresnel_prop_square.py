@@ -2,7 +2,7 @@ from numpy import sqrt
 from scipy.special import fresnel
 
 def fresnel_prop_square(x_n, y_n, D_0, wvl, Z):
-    N_F = (D_0)**2 / (wvl * Z)
+    N_F = (D_0 / 2)**2 / (wvl * Z)
 
     X = x_n / sqrt(wvl * Z)
     Y = y_n / sqrt(wvl * Z)
