@@ -22,6 +22,8 @@ psd_dict = {
 }
 
 
+# TODO: Implement a better algorithm for self.r0s
+
 class Atmos:
     """Object representing Atmosphere
 
@@ -73,7 +75,7 @@ class Atmos:
         if self.screen_method_name == 'vacuum':
             self.settings['r0'] = float('inf')
 
-        self.r0s = [self.settings['r0']] * len(dx_sampling)
+        self.r0s = [self.settings['r0'] / self.n_scr**(-3 / 5)] * self.n_scr
 
         self.screen = [self.screen_method(*inputs)
                        for inputs in self.__screen_method_input()]
