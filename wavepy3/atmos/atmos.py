@@ -28,30 +28,41 @@ class Atmos:
     TODO improve documentation
     """
 
-    def __init__(self, n_gridpts, dx_sampling, **settings):
+    def __init__(self, n_gridpts, z, dx_0, dx_n, **settings):
         '''
-        N - number of grid points
-            right now we only do square grids
-        z - a list containing the locations of each phase screen [m]
-        dx - a list containing the grid spacing of each phase screen [m]
-        atmos_parms - kwargs defining necessary atmospheric parameters
-         - this should be formatted as follows
-        atmos_parms = {'screen_method': method, 'psd': psd,
-                       'parms': {dict of parms}}
+        initialization
+
+        n_gridpts - the number of grid points along one side length
+        z - an array of phase screen locations
+        dx_0 - the grid spacing in the image plane
+        dx_n - the grid spacing in the pupil plane
+
+        Phase Screen Numbering Scheme
+
+        0     1     2    ...    n
+        |     |     |           |
+        |     |     |           |
+        |     |     |           |
+        |     |     |           |
         '''
 
         # there should be a check on atmos params based on psd and
         # screen_method to make sure the user has defined all the
         # appropriate values
 
+        prop_frac = z / z[-1]
+
         self.n_gridpts = n_gridpts
-        self.dx_sampling = dx_sampling
+        self.screen_locations = z
+        self.dx_sampling = (dx_n - dx_0) * prop_frac + dx_0
+
+        self.n_scr = len(z)
         self.screen_method_name = settings['screen_method_name']
         self.screen_method = screen_method_dict[self.screen_method_name]
         self.settings = {
             k: settings[k]
-            for k in settings.keys()
-                       - {'screen_method_name', 'psd_name'}}
+            for k in
+                settings.keys() - {'screen_method_name', 'psd_name'}}
 
         try:
             self.psd_name = settings['psd_name']

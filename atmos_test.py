@@ -10,14 +10,13 @@ import wavepy3 as wp
 D = 2
 N = 256
 dx = D / N
+z = np.linspace(0, 1, 3)
 
 atmos_parms = {
     'screen_method_name': 'vacuum',
 }
 
-dxs = [dx] * 3
-
-a1 = wp.Atmos(256, dxs, **atmos_parms)
+a1 = wp.Atmos(256, z, dx, dx, **atmos_parms)
 
 for screen in a1.screen:
     plt.imshow(screen)
@@ -32,7 +31,7 @@ atmos_parms = {
     'l0': 0.01
 }
 
-a1 = wp.Atmos(256, dxs, **atmos_parms)
+a1 = wp.Atmos(256, z, dx, dx, **atmos_parms)
 
 for screen in a1.screen:
     plt.imshow(screen)
