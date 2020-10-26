@@ -26,6 +26,10 @@ def modified_vonkarman(L0, l0):
         psd_phi = (0.023 * r0**(-5/3) * np.exp(-f_ratio**2)
                    / (f**2 + f0**2)**(11/6))
 
+        N = len(psd_phi)
+
+        psd_phi[N // 2, N // 2] = 0
+
         return psd_phi
 
     return fun
