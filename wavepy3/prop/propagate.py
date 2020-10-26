@@ -31,18 +31,17 @@ def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
     r_0 = sqrt(nx**2 + ny**2) * dx_0
 
     #  Initial Propagation from source plane to first screen location
-    Q1 = exp(1j * (k / (2*dz_prop[0]))
-                * (1 - samplingratio[0]) * r_0**2)
+    Q1 = exp(1j * (k / (2 * dz_prop[0])) * (1 - samplingratio[0]) * r_0**2)
 
     Uin = field_in * Q1 * exp(1j * atmos[0])
 
-    for (dz, dx, dx_ratio, phz) in zip(
-            dz_prop, delta, samplingratio, atmos[1:]):
+    for (dz, dx, dx_ratio, phz) in zip(dz_prop, delta, samplingratio,
+                                       atmos[1:]):
 
         UinSpec = ft2(Uin / dx_ratio, dx)
 
         # Set spatial frequencies at propagation plane
-        deltaf = 1/(n_gridpts * dx)
+        deltaf = 1 / (n_gridpts * dx)
         fX = nx * deltaf
         fY = ny * deltaf
         fsq = fX**2 + fY**2
@@ -56,9 +55,8 @@ def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
 
     r_n = sqrt(nx**2 + ny**2) * dx_n
 
-    Q3 = exp(1j * (k / (2 * dz_prop[-1]))
-             * (samplingratio[-1] - 1) / samplingratio[-1]
-             * r_n**2)
+    Q3 = exp(1j * (k / (2 * dz_prop[-1])) * (samplingratio[-1] - 1)
+             / samplingratio[-1] * r_n**2)
 
     Uout = Q3 * Uin
 
