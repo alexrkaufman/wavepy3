@@ -2,16 +2,16 @@ import numpy as np
 from numpy.random import default_rng
 from .utils import ft2, ift2
 from . import psd
-from . import screen_method
+from . import phase_screen
 
 rng = default_rng()
 
 pi = np.pi
 
 screen_method_dict = {
-    'ft_sh': screen_method.ft_sh_phase_screen,
-    'ft': screen_method.ft_phase_screen,
-    'vacuum': screen_method.vacuum
+    'ft_sh': phase_screen.ft_sh_phase_screen,
+    'ft': phase_screen.ft_phase_screen,
+    'vacuum': phase_screen.vacuum
 }
 
 psd_dict = {
@@ -82,13 +82,13 @@ class Atmos:
 
     def __screen_method_input(self):
 
-        screen_method_input_dict = {
+        phase_screen_input_dict = {
             'vacuum': ['N'],
             'ft': ['N', 'dx', 'r0', 'psd'],
             'ft_sh': ['N', 'dx', 'n_subharm', 'r0', 'psd']
             }
 
-        keys = screen_method_input_dict[self.screen_method_name]
+        keys = phase_screen_input_dict[self.screen_method_name]
         a = {'N': self.n_gridpts, 'psd': self.psd, **self.settings}
 
         for (dx, r0) in zip(self.dx_sampling, self.r0s):
