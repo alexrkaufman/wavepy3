@@ -30,12 +30,12 @@ def constraint_analysis(wvl, z, D_0, D_n, dx_0=np.linspace(1e-9, 0.5e-3, 1000),
     plt.show()
 
 
-
 # constraint 1 places an upper limit on dx_n
 def _constraint1(wvl, z, D_0, D_n):
     def fun(dx_0):
         return (wvl * z - D_n * dx_0) / D_0
     return fun
+
 
 # constraint 2 puts a lower bound on nprop
 def _constraint2(wvl, z, D_0, D_n):
