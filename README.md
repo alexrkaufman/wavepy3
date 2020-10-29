@@ -26,7 +26,7 @@ been inspired to attempt to carry on the work of open sourcing wave
 optics simulations. 
 
 ## Attribution: 
-This work is based on the orignal WavePy package from 2016. 
+This work is based on the orignal [WavePy](https://github.com/jpbos/WavePy) package from 2016. 
 
 Beck, J., Bekins, C., & Bos, J. P. (2016, May). WavePy: A Python package
 for wave optics. In SPIE Defense+ Security (pp. 984603-984603).
