@@ -23,7 +23,7 @@ def main():
     x_n, y_n = np.meshgrid(x_n, x_n)
 
     field_in = rect(x_0 / D_0) * rect(y_0 / D_0)
-    field_out = wp.propagate(field_in, wvl, dx_0, dx_n, z)
+    field_out = wp.split_step(field_in, wvl, dx_0, dx_n, z)
 
     I_in = np.absolute(field_in)**2
     I_out = np.absolute(field_out)**2
