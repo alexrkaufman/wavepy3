@@ -1,62 +1,62 @@
-import matplotlib.pyplot as plt
-
+import numpy as np
 from numpy import (exp, pi, meshgrid, linspace, sqrt)
 from numpy.fft import (fft2, fftshift, ifft2, ifftshift)
 from ..atmos import Atmos
 
-def split_step(field_in, wvl, dx_0, dx_n, z_prop, atmos=None):
 
-    n_gridpts = len(field_in)
-    nx = linspace(-n_gridpts/2, n_gridpts/2, n_gridpts)
-    nx, ny = meshgrid(nx, nx)
+def split_step(Uin, wvl, delta1, deltan, z, atmos=None):
+
+    N = len(Uin)
+    nx = np.linspace(-N / 2, N / 2, N)
+    nx, ny = np.meshgrid(nx, nx)
 
     k = 2 * pi / wvl
 
-    # generate sgb
-    sgb = super_gaussian_boundary(sqrt(nx**2 + ny**2), 0.55 * n_gridpts)
+    nsq = nx**2 + ny**2
+    w = 0.47 * N
+    sg = np.exp(-nsq**8 / w**16)
 
-    n_prop = len(z_prop)
-    dz_prop = z_prop[1:] - z_prop[:-1]
-    prop_frac = z_prop / z_prop[-1]
+    n = len(z)
 
-    delta = (dx_n - dx_0) * prop_frac + dx_0
-    samplingratio = delta[1:] / delta[:-1]
+    delta_z = z[1:] - z[:-1]
+
+    alpha = z / z[-1]
+    delta = (1 - alpha) * delta1 + alpha * deltan
+    m = delta[1:] / delta[:-1]
+    x1 = nx * delta[0]
+    y1 = ny * delta[0]
+    r1sq = x1**2 + y1**2
 
     if atmos is None:
-        atmos = Atmos(n_gridpts, delta, screen_method='vacuum')
+        atmos = Atmos(N, z, delta[0], delta[-1], screen_method_name='vacuum')
     else:
         raise Exception("Only vacuum propagation is implemented so far. "
                         + "Remove atmos input.")
 
-    r_0 = sqrt(nx**2 + ny**2) * dx_0
+    Q1 = np.exp(1j * k / 2 * (1 - m[0]) / delta_z[0] * r1sq)
+    Uin = Uin * Q1
 
-    #  Initial Propagation from source plane to first screen location
-    Q1 = exp(1j * (k / (2 * dz_prop[0])) * (1 - samplingratio[0]) * r_0**2)
+    for idx in range(n - 1):
 
-    Uin = field_in * Q1 * exp(1j * atmos[0])
-
-    for (dz, dx, dx_ratio, phz) in zip(dz_prop, delta, samplingratio,
-                                       atmos[1:]):
-
-        UinSpec = ft2(Uin / dx_ratio, dx)
-
-        # Set spatial frequencies at propagation plane
-        deltaf = 1 / (n_gridpts * dx)
+        deltaf = 1 / (N * delta[idx])
         fX = nx * deltaf
         fY = ny * deltaf
         fsq = fX**2 + fY**2
 
-        # Quadratic Phase Factor
-        Q2 = exp(-1j * 2 * pi**2 * dz * fsq / (k * dx_ratio))
+        Dz = delta_z[idx]
 
-        Uin = ift2(Q2 * UinSpec, deltaf)
+        Q2 = np.exp(-1j * pi**2 * 2 * Dz / m[idx] / k * fsq)
 
-        Uin = Uin * sgb * exp(1j * phz)
+        Uin = (sg * np.exp(atmos[idx])
+               * ift2(Q2
+                      * ft2(Uin / m[idx], delta[idx]), deltaf))
 
-    r_n = sqrt(nx**2 + ny**2) * dx_n
+    xn = nx * delta[-1]
+    yn = ny * delta[-1]
 
-    Q3 = exp(1j * (k / (2 * dz_prop[-1])) * (samplingratio[-1] - 1)
-             / samplingratio[-1] * r_n**2)
+    rnsq = xn**2 + yn**2
+
+    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Dz) * rnsq)
 
     Uout = Q3 * Uin
 
