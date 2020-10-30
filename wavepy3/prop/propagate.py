@@ -7,7 +7,7 @@ from ..atmos import Atmos
 def split_step(Uin, wvl, delta1, deltan, z, atmos=None):
 
     N = len(Uin)
-    nx = np.linspace(-N / 2, N / 2, N)
+    nx = np.linspace(-N / 2, N / 2, N, endpoint=False)
     nx, ny = np.meshgrid(nx, nx)
 
     k = 2 * pi / wvl
