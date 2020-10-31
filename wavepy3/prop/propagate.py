@@ -4,61 +4,60 @@ from numpy.fft import (fft2, fftshift, ifft2, ifftshift)
 from ..atmos import Atmos
 
 
-def split_step(Uin, wvl, delta1, deltan, z, atmos=None):
+def split_step(field_in, wvl, delta_0, delta_n, z_prop, atmos=None):
 
-    N = len(Uin)
-    nx = np.linspace(-N / 2, N / 2, N, endpoint=False)
+    n_gridpts = len(field_in)
+    nx = np.linspace(-n_gridpts / 2, n_gridpts / 2, n_gridpts,
+                     endpoint=False)
     nx, ny = np.meshgrid(nx, nx)
 
     k = 2 * pi / wvl
 
     nsq = nx**2 + ny**2
-    w = 0.47 * N
-    sg = np.exp(-nsq**8 / w**16)
+    boundary_width = 0.47 * n_gridpts
+    boundary_supergaussian = np.exp(-nsq**8 / boundary_width**16)
 
-    n = len(z)
+    delta_z = z_prop[1:] - z_prop[:-1]
 
-    delta_z = z[1:] - z[:-1]
-
-    alpha = z / z[-1]
-    delta = (1 - alpha) * delta1 + alpha * deltan
+    prop_frac = z_prop / z_prop[-1]
+    delta = (1 - prop_frac) * delta_0 + prop_frac * delta_n
     m = delta[1:] / delta[:-1]
-    x1 = nx * delta[0]
-    y1 = ny * delta[0]
-    r1sq = x1**2 + y1**2
+    x0 = nx * delta[0]
+    y0 = ny * delta[0]
+    r0sq = x0**2 + y0**2
 
     if atmos is None:
-        atmos = Atmos(N, z, delta[0], delta[-1], screen_method_name='vacuum')
+        atmos = Atmos(n_gridpts, z_prop, delta[0], delta[-1],
+                      screen_method_name='vacuum')
     else:
         raise Exception("Only vacuum propagation is implemented so far. "
                         + "Remove atmos input.")
 
-    Q1 = np.exp(1j * k / 2 * (1 - m[0]) / delta_z[0] * r1sq)
-    Uin = Uin * Q1
+    Q1 = np.exp(1j * k / 2 * (1 - m[0]) / delta_z[0] * r0sq)
+    field_in = field_in * Q1
 
-    for idx in range(n - 1):
+    for (dx, dx_ratio, dz, phz) in zip(delta, m, delta_z, atmos):
 
-        deltaf = 1 / (N * delta[idx])
-        fX = nx * deltaf
-        fY = ny * deltaf
-        fsq = fX**2 + fY**2
+        deltaf = 1 / (n_gridpts * dx)
 
-        Dz = delta_z[idx]
+        f_x = nx * deltaf
+        f_y = ny * deltaf
+        fsq = f_x**2 + f_y**2
 
-        Q2 = np.exp(-1j * pi**2 * 2 * Dz / m[idx] / k * fsq)
+        Q2 = np.exp(-1j * pi**2 * 2 * dz / dx_ratio / k * fsq)
 
-        Uin = (sg * np.exp(atmos[idx])
-               * ift2(Q2
-                      * ft2(Uin / m[idx], delta[idx]), deltaf))
+        field_in = (boundary_supergaussian
+                    * ift2(Q2 * ft2(field_in / dx_ratio
+                                    * np.exp(phz), dx), deltaf))
 
     xn = nx * delta[-1]
     yn = ny * delta[-1]
 
     rnsq = xn**2 + yn**2
 
-    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * Dz) * rnsq)
+    Q3 = np.exp(1j * k / 2 * (m[-1] - 1) / (m[-1] * delta_z[-1]) * rnsq)
 
-    Uout = Q3 * Uin
+    Uout = Q3 * field_in * np.exp(atmos[-1])
 
     return Uout
 
