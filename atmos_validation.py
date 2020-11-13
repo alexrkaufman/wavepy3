@@ -1,6 +1,9 @@
 # atmos_test
-# This should do what test/Validate function does.
-# TODO reimplement the WavePy3 Validate function
+# Copied from the original wavepy and broken into
+# a few functions for slight improvement of readability
+
+# TODO make this more readable
+# TODO Add axes to grid. ``
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +14,8 @@ def main():
 
     D = 2
     N = 512
-    dx = [D / N] * n_screens
+    dx = D / N
+    z = np.linspace(0, 1, n_screens)
     r0 = 0.5 * D / 20
 
     atmos_parms_FT = {
@@ -33,8 +37,8 @@ def main():
         'wvl': 1e-6,
     }
 
-    atmos_FT = wp.Atmos(N, dx, **atmos_parms_FT)
-    atmos_SH = wp.Atmos(N, dx, **atmos_parms_SH)
+    atmos_FT = wp.Atmos(N, z, dx, dx, **atmos_parms_FT)
+    atmos_SH = wp.Atmos(N, z, dx, dx, **atmos_parms_SH)
 
     phz_FT = np.zeros((N, N))
     phz_FT_temp = phz_FT
@@ -158,6 +162,7 @@ def make_pupil(d, D, N):
     mask = np.reshape(mask, (N, N))
 
     return mask  # returns the pupil mask as the whole function's output
+
 
 if __name__ == '__main__':
     main()
