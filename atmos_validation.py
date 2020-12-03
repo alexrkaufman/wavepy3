@@ -12,16 +12,16 @@ import wavepy3 as wp
 def main():
     n_screens = 5
 
-    D = 2
-    N = 512
-    dx = D / N
-    z = np.linspace(0, 1, n_screens)
-    r0 = 0.5 * D / 20
+    D = 1
+    N = 256
+    dx = 5e-3
+    z = np.linspace(0, 10e3, n_screens)
+    r0scrn = 0.5 * D / 20
 
     atmos_parms_FT = {
         'psd_name': 'modified_vonKarman',
         'screen_method_name': 'ft',
-        'r0': r0,
+        'r0': r0scrn,
         'l0': 0.01,
         'L0': 100,
         'wvl': 1e-6,
@@ -31,7 +31,7 @@ def main():
         'psd_name': 'modified_vonKarman',
         'screen_method_name': 'ft_sh',
         'n_subharm': 4,
-        'r0': r0,
+        'r0': r0scrn,
         'l0': 0.01,
         'L0': 100,
         'wvl': 1e-6,
@@ -77,7 +77,7 @@ def main():
     cent_dist = np.zeros(N // 2)
     r_size = (0.5 * D) / (0.5 * N)
     for i in range(0, (N // 2)):
-        cent_dist[i] = (i * r_size) / (r0)
+        cent_dist[i] = (i * r_size) / (r0scrn)
 
     # Defining theoretical equation
     theory_val = np.zeros(N // 2)
