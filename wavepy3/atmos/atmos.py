@@ -24,20 +24,24 @@ psd_dict = {
 
 # TODO: Implement a better algorithm for self.r0s
 
+
 class Atmos:
     """Object representing Atmosphere
-
-    TODO improve documentation
     """
+
+    # TODO improve documentation
+    # TODO make discovery of screen methods, psds, and their inputs
+    # generic and automated. Likely based on inspecting the functions
+    # and their inputs and using those.
 
     def __init__(self, n_gridpts, z, dx_0, dx_n, **settings):
         '''
         initialization
 
-        n_gridpts - the number of grid points along one side length
-        z - an array of phase screen locations
-        dx_0 - the grid spacing in the image plane
-        dx_n - the grid spacing in the pupil plane
+        :param n_gridpts: the number of grid points along one side length
+        :param z: an array of phase screen locations
+        :param dx_0: the grid spacing in the image plane
+        :param dx_n: the grid spacing in the pupil plane
 
         Phase Screen Numbering Scheme
 
@@ -48,7 +52,7 @@ class Atmos:
         |     |     |           |
         '''
 
-        # there should be a check on atmos params based on psd and
+        # TODO: there should be a check on atmos params based on psd and
         # screen_method to make sure the user has defined all the
         # appropriate values
 
@@ -64,7 +68,7 @@ class Atmos:
         self.settings = {
             k: settings[k]
             for k in
-                settings.keys() - {'screen_method_name', 'psd_name'}}
+            settings.keys() - {'screen_method_name', 'psd_name'}}
 
         try:
             self.psd_name = settings['psd_name']
@@ -77,6 +81,9 @@ class Atmos:
 
         self.r0s = [self.settings['r0'] / self.n_scr**(-3 / 5)] * self.n_scr
 
+        # TODO right now we generate all of the screens up front.
+        # Would it be better to make Atmos an iterable that generates
+        # them on the fly and stores once theyve been generated?
         self.screen = [self.screen_method(*inputs)
                        for inputs in self.__screen_method_input()]
 
@@ -145,6 +152,11 @@ class Atmos:
         pass
 
     def vacuum(self, *args):
+        """ returns array of all ones representing vacuum
+
+        :param *args:
+
+        """
         return np.ones([self.n_gridpts, self.n_gridpts])
 
     @staticmethod

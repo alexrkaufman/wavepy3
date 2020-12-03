@@ -1,3 +1,11 @@
+"""
+A set of phase screen generation methods.
+As new phase screen generation methods are implemented it may
+be wise to break these into their own files.
+
+TODO: Implement more phase screen generation methods.
+      Specifically ones alternative to the Fourier transform method.
+"""
 import numpy as np
 from numpy.random import default_rng
 from numpy import pi
@@ -7,16 +15,33 @@ rng = default_rng()
 
 
 def vacuum(n_gridpts):
+    """
+    Generates a vacuum phase screen (all ones).
+    This is here as a convenience and renaming of generating
+    ones for user friendliness.
+
+    :param n_gridpts: The number of gridpoints.
+    :returns: an array of all ones
+    """
     return np.ones([n_gridpts, n_gridpts])
 
 
 def ft_sh_phase_screen(N, dx, n_subharm, r0, psd_fn):
-    ''' phase screen with subharmonic methods
+    """phase screen with subharmonics
 
     This computes phase screens including subharmonics.
 
-    TODO improve documentation
-    '''
+    TODO: make input variable names more pythonic
+
+    :param N: number of grid points on either side
+    :param dx: grid spacing
+    :param n_subharm: number of subharmonics
+    :param r0: the coherence diameter
+    :param psd_fn: the power spectral density function to be used.
+                   must be a function of r0 and frequency.
+
+    :returns: A Fourier transform phase screen with subharmonics.
+    """
 
     phz_hi = ft_phase_screen(N, dx, r0, psd_fn)
     phz_lo = ft_sh(N, dx, n_subharm, r0, psd_fn)
@@ -30,7 +55,13 @@ def ft_phase_screen(N, dx, r0, psd):
     fourier transform phase screen without subharmonics
     on their own these do not do a good job approximating atmosphere
 
-    TODO improve documentation
+    :param N:
+    :param dx:
+    :param r0:
+    :param psd:
+
+    :returns: a Fourier transform phase screen
+
     """
 
     df = 1 / (N * dx)  # Frequency grid spacing.
@@ -54,12 +85,18 @@ def ft_phase_screen(N, dx, r0, psd):
 
 
 def ft_sh(N, dx, n_subharm, r0, psd):
-    ''' ft_sh
+    """Computes subharmonics for the fourier transform method.
 
-    subharmonics for fourier transform phase screens
-
+    TODO: Should this be a private method? I cant see why someone would
+    call this own.
     TODO Improve documentation
-    '''
+
+    :param N: number of gridpoints
+    :param dx: gridspacing
+    :param n_subharm: number of subharmonics
+    :param r0: coherence diameter
+    :param psd: psd function (must be a function of r0 and frequency)
+    """
 
     D = N * dx
 

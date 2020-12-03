@@ -1,15 +1,32 @@
-# atmos_test
-# Copied from the original wavepy and broken into
-# a few functions for slight improvement of readability
+"""
+An example script comparing Atmos results to the
+theoretical structure function.
 
-# TODO make this more readable
-# TODO Add axes to grid. ``
+This is mainly copied from the original wavepy.Validate() function.
+It has been broken up into a couple of different functions for
+improvement of readability.
+
+The computed structure function is generated for the
+fourier transform method both with and without subharmonics.
+The psd used is modified_vonKarman.
+
+
+TODO: Make structure_fn a part of the main wavepy3 library.
+      Make it work for a general aperture. Current implementation
+      is only circular ap.
+
+TODO: Use a circular aperture function instead of make_pupil.
+TODO: Make this code more legible.
+"""
 
 import numpy as np
 import matplotlib.pyplot as plt
 import wavepy3 as wp
 
+
 def main():
+    """ The main method.
+    """
     n_screens = 5
 
     D = 1
@@ -93,7 +110,17 @@ def main():
     plt.ylim((0, 400))
     plt.show()
 
+
 def StructFunc(ph, D, N):
+    """
+    This computes the 2D structure function.
+    For a circular aperture.
+
+    :param ph: A 2D phase
+    :param D: The side length of the input phase screen.
+    :param N: The number of grid points. (why cant we get this from ph?)
+
+    """
     mask = make_pupil(D / 4, D, N)
     delta = D / len(ph)
 
@@ -127,7 +154,17 @@ def StructFunc(ph, D, N):
 
     return D
 
+
 def make_pupil(d, D, N):
+    """
+    makes a circular pupil.
+    This is what the original wavepy did. There may be a better way.
+
+    :param d:
+    :param D:
+    :param N:
+
+    """
     boundary1 = -d / 2
     boundary2 = d / 2
     A = np.linspace(boundary1, boundary2, N)

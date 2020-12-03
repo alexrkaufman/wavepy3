@@ -1,4 +1,8 @@
-# This is how easy it should be to propagate a signal
+"""
+This should show how to propagate a signal through vacuum.
+Will also display a plot so that users can see agreement between
+theory and simulation for a square aperture source.
+"""
 import wavepy3 as wp
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,6 +36,19 @@ def main():
 
 
 def validation_plots(field_in, field_out, field_analytic, x_0, x_n):
+    """
+    This is just a helper function to provide a nice display
+    of some plots that show the user agreement between the
+    numerical and analytic results.
+
+    :param field_in: The input field.
+    :param field_out: The numerical output field.
+    :param field_analytic: A 1D slice of the analytic solution.
+    :param x_0: A 1D array of the object plane.
+    :param x_n: A 1D array of the x and y axes in the terminal plane.
+
+    :returns: Nothing.
+    """
 
     N = len(field_in)
 

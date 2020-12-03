@@ -1,3 +1,11 @@
+"""
+This provides the current primary method of propagation.
+We utilize the split_step propagation method defined in [1].
+Other functions here are helpers for split_step
+
+.. [1] J. D. Schmidt, Numerical Simulation of Optical Wave Propagation
+   With Examples in Matlab. SPIE Press, 2010.
+"""
 import numpy as np
 from numpy import (exp, pi, meshgrid, linspace, sqrt)
 from numpy.fft import (fft2, fftshift, ifft2, ifftshift)
@@ -5,6 +13,26 @@ from ..atmos import Atmos
 
 
 def split_step(field_in, wvl, delta_0, delta_n, z_prop, atmos=None):
+    """A python implementation of the split step propagation method
+    defined in [1].
+
+    :param field_in: A 2D array of the field at the object plane.
+    :param wvl: The wavelength of light used.
+    :param delta_0: The grid spacing in the object plane.
+    :param delta_n: The grid spacing at the final plane after propagation.
+    :param z_prop: An array of propagation plane locations.
+    :param atmos: An optional Atmos object defining atmospheric conditions
+    to propagate the signal through. If `None` is passed a vacuum is assumed.
+    (Default value = None)
+
+    :returns: This function will return a 2D array of the field at the terminal
+    propagation plane.
+
+
+    .. [1] J. D. Schmidt, Numerical Simulation of Optical Wave Propagation
+       With Examples in Matlab. SPIE Press, 2010.
+
+    """
 
     n_gridpts = len(field_in)
     nx = np.linspace(-n_gridpts / 2, n_gridpts / 2, n_gridpts,
@@ -63,10 +91,14 @@ def split_step(field_in, wvl, delta_0, delta_n, z_prop, atmos=None):
 
 
 def ft2(g, dx):
-    """ Schmidt implementation of DFT2
+    """Schmidt's implementation of DFT2
 
     TODO This needs better documentation.
     Why this instead of np version of fft2?
+
+    :param g: the function to be discrete fourier transformed
+    :param dx: the grid spacing
+
     """
 
     G = fftshift(fft2(fftshift(g))) * dx**2
@@ -75,9 +107,13 @@ def ft2(g, dx):
 
 
 def ift2(G, df):
-    """ Schmidt implementation of DIFT2
+    """Schmidt implementation of DIFT2
 
     TODO This needs better documentation for the same reason as ft2.
+
+    :param G: the function to be discrete inverse fourier transformed.
+    :param df: the frequency spacing
+
     """
 
     N = len(G)
@@ -86,5 +122,12 @@ def ift2(G, df):
     return g
 
 
-def super_gaussian_boundary(rad, width):
-    return exp(-(rad / width)**16.0)
+def super_gaussian_boundary(radius, width):
+    """super_gaussian_boundary
+    defines a super gaussian boundary.
+
+    :param radius: radial coordinate. usually meshgrid.
+    :param width: the width of the boundary
+
+    """
+    return exp(-(radius / width)**16.0)

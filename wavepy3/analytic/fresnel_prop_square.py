@@ -1,7 +1,26 @@
+"""
+Analytic result for the Fresnel propagation of a square aperture
+through vacuum.
+
+TODO: update to conform to python style guides more effectively
+"""
 from numpy import sqrt
 from scipy.special import fresnel
 
+
 def fresnel_prop_square(x_n, y_n, D_0, wvl, Z):
+    """
+    A function for the analytic result of the Fresnel propagation
+    of a square aperture through vacuum.
+
+    :param x_n: array of x coordinates in terminal plane
+    :param y_n: array of y coordinates in terminal plane
+    :param D_0: Side length of the square aperture.
+    :param wvl: Wavelength of light.
+    :param Z: Propagation distance
+
+    :returns: the analytic fresnel propagation result for the coordinates given
+    """
     N_F = (D_0 / 2)**2 / (wvl * Z)
 
     X = x_n / sqrt(wvl * Z)
