@@ -88,6 +88,7 @@ def main():
     plt.plot(cent_dist, theory_val)
     plt.plot(cent_dist, phz_FT_disp)
     plt.plot(cent_dist, phz_SH_disp)
+    plt.legend(['theory', 'FT', 'FT+SH'])
     plt.xlim((0, 10))
     plt.ylim((0, 400))
     plt.show()
